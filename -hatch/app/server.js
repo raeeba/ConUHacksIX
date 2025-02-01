@@ -1,34 +1,32 @@
-const { MongoClient } = require('mongodb');
+// server.js
+const connectToDatabase = require('./dbConnection');
+const UserModel = require('./models/userModel');
 
 async function main() {
-  const uri = 'mongodb+srv://jannalomibaow:uch3W7qyRzFNbLHT@dbuno.m0dwb.mongodb.net/?retryWrites=true&w=majority&appName=dbUno';
-
-  const client = new MongoClient(uri);
-
+  let client;
   try {
     // Connect to MongoDB
-    await client.connect();
-    console.log("Connected to the database!");
+    client = await connectToDatabase(); // mongo connect
 
-    // List collections in HackConcordia database
-    const collections = await listCollections(client, 'HackConcordia');
-    console.log("Collections in HackConcordia database:");
-    collections.forEach((collection) => {
-      console.log(`- ${collection}`);
-    });
+    // // Create user
+    // const userModel = new UserModel(client);
+    // const newMember = {
+    //   name: "rae",
+    //   email: "rae@gmail.com",
+    //   password: "12345"
+    // };
+
+    const result = await userModel.createUser(newMember); // Await the result of the async operation
+    console.log(result.insertedId);
 
   } catch (error) {
-    console.error("Error connecting to the database: ", error);
+    console.error("Error:", error);
   } finally {
-    await client.close();
+    // Close the client connection
+    if (client) {
+      await client.close();
+    }
   }
 }
 
 main().catch(console.error);
-
-async function listCollections(client, dbName) {
-  const db = client.db(dbName);
-  const collections = await db.listCollections().toArray();
-  return collections.map(collection => collection.name);
-}
-

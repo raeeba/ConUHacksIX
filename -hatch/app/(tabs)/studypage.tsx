@@ -98,7 +98,7 @@ const TimerApp: React.FC = () => {
                         <TextInput
                             style={styles.input}
                             keyboardType="numeric"
-                            placeholder="Enter time in seconds"
+                            placeholder="Enter time in minutes"
                             value={inputTime}
                             onChangeText={setInputTime}
                         />

@@ -2,6 +2,13 @@ const { ObjectId } = require('mongodb');
 const connectToDatabase = require('./dbConnection');
 const UserModel = require('./models/userModel');  // Make sure this is the correct import
 
+/**
+ * 
+ * @param {*} newUser 
+ * @param {*} petType 
+ * @param {*} petName 
+ * @returns 
+ */
 async function registerUser(newUser, petType, petName) {
   let client;
   try {
@@ -71,8 +78,28 @@ async function taskComplete(userId, taskId) {
   const userModel = new UserModel(client);
 
   try {
-    const result = await userModel.completeTask(userId,taskId);
-    console.log("task Done:", result); 
+    const task = await getTaskForUser(userId,taskId);
+    if (!task) {
+      console.log("Task not found");
+      return;
+    }
+
+    const result = await userModel.completeTask(task);
+    console.log("task Done:", result);
+
+    //details of user
+    const user = await userModel.getUserById(userId);
+    const pet = user.pet;
+
+    if (pet.health < 100) {
+      pet.health = Math.min(pet.health + 20, 100); // pet.health + 20 but it wont exceed to 100
+    }
+    
+    const userUpdateResult = await userModel.updateUserTime(userId);
+    console.log("is time updated? "+userUpdateResult);
+
+    const updatePetHealthResult = await userModel.updatePetHealth(userId, pet.health);
+    console.log("Pet health updated:", updatePetHealthResult);
 
   } catch (error) {
     console.error("Error marking task as completed:", error);
@@ -119,6 +146,51 @@ async function getTaskForUser(userId, taskId) {
   }
 }
 
+async function isMoreThanSixHours(userId) {
+  client = await connectToDatabase();
+  const userModel = new UserModel(client);
+
+  try {
+    // Find the user by userId
+    const user = await userModel.collection.findOne({ _id: userId });
+
+    if (!user) {
+      console.log("User not found");
+      return;
+    }
+
+    const currentTime = new Date();
+
+    const lastModifiedTime = new Date(user.lastTimeModified);
+
+    const timeDifferenceMs = currentTime - lastModifiedTime;
+    const sixHoursInMs = 6 * 60 * 60 * 1000;// 6 hrs = 21,600,000
+
+    console.log(timeDifferenceMs);
+
+    return timeDifferenceMs > sixHoursInMs;
+
+  } catch (error) {
+    console.error("Error calculating time difference:", error);
+    throw error;
+  }
+}
+
+async function updatePetMood(userId){
+  client = await connectToDatabase();
+  const userModel = new UserModel(client);
+
+  try{
+    const result = await userModel.getPetMood(userId);
+    console.log(result);
+
+  }catch (error) {
+    console.error("Error calculating time difference:", error);
+    throw error;
+  }
+
+}
+
 
 
 
@@ -126,35 +198,44 @@ async function getTaskForUser(userId, taskId) {
 async function main() {
   
   try {
-  //   const userData = {
-  //     name: "John Doe",
-  //     email: "john@example.com",
-  //     password: "12345"
-  //   };
+    // const userData = {
+    //   name: "John Doe",
+    //   email: "john@example.com",
+    //   password: "12345"
+    // };
 
-  //   const petType = 1; 
-  //   const petName = "Whiskers";
+    // const petType = 1; 
+    // const petName = "Whiskers";
 
-  //   await registerUser(userData,petType,petName);
+    // await registerUser(userData,petType,petName);
    
 
     const currentUser = await loginUser("john@example.com", "12345");
     console.log(currentUser);
     if (currentUser) {
       //add task
-      //const task = await addTaskToUser(currentUser._id,'Study JavaScript');
+      //const task = await addTaskToUser(currentUser._id,'Study Jnone');
       //const task1 = await addTaskToUser(currentUser._id,'Study JavaScript');
+
+      // console.log('getall task ');
+      // console.log(await getTasksForUser(currentUser._id));
+
+       //console.log('get specific task ');
+      // console.log(currentUser._id);
+       //console.log(await getTaskForUser(currentUser._id,new ObjectId('679eff9b9cf25c04b56ef450')) );
 
       //change task
       // console.log('change it task ');
-      // await taskComplete(currentUser._id,task._id);
+      // await taskComplete(currentUser._id,new ObjectId('679eff9b9cf25c04b56ef450'));
 
-      console.log('getall task ');
-      console.log(await getTasksForUser(currentUser._id));
+      //is more than 6 hours
+      // const result = await isMoreThanSixHours(currentUser._id);
+      // console.log(result);
 
-      console.log('get specific task ');
-      console.log(currentUser._id);
-      console.log(await getTaskForUser(currentUser._id,task._id) );
+      //update mood
+      //console.log(await updatePetMood(currentUser._id));
+      
+      
    
      }
 
@@ -169,13 +250,13 @@ main().catch(console.error);
 
 /**
  * getTasks: DONE!
- * getTask: NOT DONE!
- * dateCalculate: NOT DONE!
- * moodChange: NOT DONE!
+ * getTask:  DONE!
+ * isMoreThanSixHours:  DONE! -> this calculated the last time a mofication occured in the data to the current
+ * moodChange:  DONE! -> this method can beused to update the moood of the pet only. to update the life use 'isMoreThanSixHours'
  * register: DONE!
  * login: DONE!
  * addTasktoUser: DONE!
- * taskComplete: NOT DONE!
+ * taskComplete:  DONE! -> when a task is complete, it sets the 'isComplete' to true, update the lastTimeModified, and pethealth
  * 
  * 
  */

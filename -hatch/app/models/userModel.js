@@ -1,8 +1,6 @@
 const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt'); //hash
 
-//model
-const TaskModel = require('./taskModel');
 
 class UserModel {
   constructor(client) {
@@ -10,7 +8,13 @@ class UserModel {
     this.collection = this.db.collection('userData'); // Collection name
   }
 
-  // method to create a new user
+  /**
+   * 
+   * @param {array of user's data} userData 
+   * @param {number either 1 or 2} petType 
+   * @param {string name} petName 
+   * @returns it return an object containing details about the operation
+   */
    async  createUser(userData, petType, petName) {
     const hashedPassword = await bcrypt.hash(userData.password, 10); 
 
@@ -32,24 +36,92 @@ class UserModel {
     return result;
   }
 
-  // method to find a user by email
+  /**
+   * 
+   * @param {user email} email 
+   * @returns it returns the user document
+   */
   async findUserByEmail(email) {
     const user = await this.collection.findOne({ email });
     return user;
   }
+/**
+ * 
+ * @param {*} userid 
+ * @returns a boolean
+ */
+  async updateUserTime(userid){
+    if (!this.collection) {
+      throw new Error('Collection not initialized');
+    }
+    try {
+      const user = await this.collection.findOne({ _id: userid });
+  
+      if (!user) {
+        console.log("User not found");
+        return;
+      }
+  
+      // Update the lastTimeModified 
+      const result = await this.collection.updateOne(
+        { _id: userid },
+        { $set: { lastTimeModified: new Date() } }
+      );
+  
+      if (result.modifiedCount > 0) {
+        console.log("User's lastTimeModified updated successfully.");
+        return true;
+      } else {
+        console.log("No modification to lastTimeModified.");
+        return false;
+      }
+      
+    } catch (error) {
+      console.error("Error updating user's lastTimeModified:", error);
+      throw error;
+    }
 
-  // method to validate user password
+  }
+
+  /**
+   * 
+   * @param {*} inputPassword 
+   * @param {*} storedPassword 
+   * @returns returns a boolean
+   */
   async validatePassword(inputPassword, storedPassword) {
     const isValid = await bcrypt.compare(inputPassword, storedPassword);
     return isValid;
   }
 
-  // method to get all users (or customize as needed)
+  async getUserById(userID){
+    try {
+      const user = await this.collection.findOne({ _id: userID });
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return user;
+    } catch (error) {
+      console.error("Error retrieving user:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 
+   * @returns array of users
+   */
   async getAllUsers() {
     const users = await this.collection.find().toArray();
     return users;
   }
 
+  /**
+   * 
+   * @param {*} userId 
+   * @param {*} taskName 
+   * @returns returns an object containing details about the operation
+   */
  async addTask(userId, taskName) {
     console.log("addtask");
 
@@ -58,7 +130,7 @@ class UserModel {
       taskDesc:taskName,           // Task name
       isCompleted: false,  // Task completion status
       createdDate: new Date(),       // Current date for createdDate
-  }; 
+    }; 
   console.log(task);
   if (!this.collection) {
     throw new Error('Collection not initialized');
@@ -67,28 +139,59 @@ class UserModel {
   }
     const result = await this.collection.updateOne(
       { _id: userId },
-      { $push: { tasks: task } }  // Add task to the tasks array
+      { $push: { tasks: task } }  
     );
     console.log("out");
-    return result;
+    return result;//result
   }
 
-  async completeTask(userId, taskId) {
-    console.log("update task");
 
+  /**
+   * 
+   * @param {*} task 
+   * @returns a boolean
+   */
+  async completeTask(task) {
+    console.log("Updating task to completed");
+  
     if (!this.collection) {
       throw new Error('Collection not initialized');
-    }else{
-      console.log("yes");
     }
+  
+    try {
+      // Ensure the task document has an _id field
+      if (!task._id) {
+        throw new Error("Task document does not have an _id field");
+      }
+  
+      // Update the task's isCompleted field
       const result = await this.collection.updateOne(
-        { _id: userId, _id: taskId }, 
-        {$set: { "tasks.$.isCompleted": true } } // Add task to the tasks array
+        { "tasks._id": task._id },  // Match task by its _id inside the tasks array
+        { $set: { "tasks.$.isCompleted": true } }  // Set isCompleted to true
       );
-      console.log("out");
-      return result;
+  
+      console.log("Update result:", result);
+  
+      if (result.modifiedCount === 0) {
+        console.log("No task was updated. The task might already be completed or not found.");
+        return null;
+      } else {
+        console.log("Task completed successfully")
+  
+        return true;
+      }
+    } catch (error) {
+      console.error("Error updating task:", error);
+      throw error;
+    }
   }
 
+
+  /**
+   * 
+   * @param {*} userId 
+   * @returns returns an array of task
+   */
   async getTasks(userId) {
     if (!this.collection) {
       throw new Error('Collection not initialized');
@@ -111,11 +214,24 @@ class UserModel {
     }
   }
 
+  /**
+   * 
+   * @param {*} userId 
+   * @param {*} taskId 
+   * @returns a specific task
+   */
   async getTask(userId, taskId) {
     if (!this.collection) {
       throw new Error('Collection not initialized');
     }else{
       console.log("yes");
+    }
+
+    if (!(userId instanceof ObjectId)) {
+      console.log("user id is not object")
+    }
+    if (!(taskId instanceof ObjectId)) {
+      console.log("task id is not object")
     }
 
     try {
@@ -124,9 +240,10 @@ class UserModel {
         console.log("User not found");
         return null;
       }
+      console.log("specific task");
   
       // Find the task with the matching _id
-      const task = user.tasks.find(task => task._id.toString() === taskId);
+      const task = user.tasks.find(task => task._id.equals(taskId));
   
       return task || null;
     } catch (error) {
@@ -134,7 +251,6 @@ class UserModel {
       throw error;
     }
   }
-
   
 
   //helper class
@@ -147,40 +263,59 @@ class UserModel {
     return localTime;
   }
 
-
-
-  async checkAndUpdateHealth(userId) {
-    const user = await this.collection.findOne({ _id: userId });
-
-    if (user) {
-      // Get the current time and calculate the difference in hours
-      const currentTime = new Date();
-      const lastModified = user.lastTimeModified;
-      const timeDiff = (currentTime - lastModified) / (1000 * 60 * 60);  
-
-      if (timeDiff >= 6) {
-        // Decrease health if more than 6 hours have passed
-        const newHealth = user.pet.health - 20;  
-        const updatedPet = { ...user.pet, health: newHealth };
-        
-        // Update the user's health and set lastTimeModified to current time
-        await this.collection.updateOne(
-          { _id: userId },
-          { 
-            $set: {
-              "pet": updatedPet,
-              "lastTimeModified": currentTime // Update lastTimeModified to current time
-            }
-          }
-        );
-        console.log(`User's health has been updated to: ${newHealth}`);
-      } else {
-        console.log("Health update not necessary yet.");
+  async updatePetHealth(userId, newHealth) {
+    try {
+      const result = await this.collection.updateOne(
+        { _id: userId },
+        { $set: { "pet.health": newHealth } }
+      );
+      if (result.modifiedCount === 0) {
+        throw new Error("Pet health update failed");
       }
-    } else {
-      console.log("User not found.");
+      return result;
+    } catch (error) {
+      console.error("Error updating pet health:", error);
+      throw error;
     }
   }
+
+  async getPetMood(userId) {
+    try {
+      const user = await this.getUserById(userId);
+      const pet = user.pet;
+
+      // Update pet's mood based on health
+      console.log('pet:' + pet);
+      if (pet.health <= 20) {
+        pet.mood = 3;// sad
+      } else if (pet.health <= 60) {
+        pet.mood = 2; //calm
+      } else if (pet.health <= 100) {
+        pet.mood = 1; //happy
+      }
+      console.log( "mood:" + pet.mood);
+
+      const result = await this.collection.updateOne(
+        { _id: userId },
+        { $set: { "pet.mood": pet.mood } }
+      );
+
+      if (result.modifiedCount === 0) {
+        console.log('No changes')
+      }
+
+      console.log(`Pet mood updated to: ${pet.mood}`);
+      return true; // Return the updated pet object
+    } catch (error) {
+      console.error("Error retrieving pet health or updating mood:", error);
+      throw error;
+    }
+  }
+
+
+
+
+  
 
 }
 

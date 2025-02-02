@@ -249,13 +249,13 @@ main().catch(console.error);
 
 
 /**
- * getTasks: DONE!
- * getTask:  DONE!
+ * getTasks: DONE!-> get all the task under the user
+ * getTask:  DONE!  -> get specific task
  * isMoreThanSixHours:  DONE! -> this calculated the last time a mofication occured in the data to the current
  * moodChange:  DONE! -> this method can beused to update the moood of the pet only. to update the life use 'isMoreThanSixHours'
  * register: DONE!
  * login: DONE!
- * addTasktoUser: DONE!
+ * addTasktoUser: DONE! -> add task to the user
  * taskComplete:  DONE! -> when a task is complete, it sets the 'isComplete' to true, update the lastTimeModified, and pethealth
  * 
  * 

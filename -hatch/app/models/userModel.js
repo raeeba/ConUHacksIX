@@ -263,6 +263,13 @@ class UserModel {
     return localTime;
   }
 
+  /**
+   * 
+   * @param {*} userId 
+   * @param {*} newHealth 
+   * @returns returns the object containig some details
+   */
+
   async updatePetHealth(userId, newHealth) {
     try {
       const result = await this.collection.updateOne(
@@ -279,6 +286,11 @@ class UserModel {
     }
   }
 
+  /**
+   * 
+   * @param {*} userId 
+   * @returns boolean if the updatting of pet mood is done
+   */
   async getPetMood(userId) {
     try {
       const user = await this.getUserById(userId);

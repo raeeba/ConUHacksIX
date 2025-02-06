@@ -1,5 +1,5 @@
 const { MongoClient, ObjectId } = require('mongodb');
-const bcrypt = require('bcrypt'); //hash
+const bcrypt = require('bcryptjs'); //hash
 
 
 class UserModel {

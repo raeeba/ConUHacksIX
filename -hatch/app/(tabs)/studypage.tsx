@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Modal, Image,TouchableOpacity, ScrollView, FlatList, ImageBackground } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Modal, Image,TouchableOpacity, ScrollView, FlatList } from 'react-native';
 import { Grid, Col} from "react-native-easy-grid"
 import { CheckBox } from 'react-native-elements';
 
 const TimerApp: React.FC = () => {
+
     // for the timer
     const [inputTime, setInputTime] = useState<string>('');
     const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -15,14 +16,11 @@ const TimerApp: React.FC = () => {
     const [checkboxes, setCheckboxes] = useState<{ id: number; checked: boolean }[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [list, setList] = useState<{ id: string; text: string; checked: boolean }[]>([]);
-
     useEffect(() => {
         if (!isRunning || timeLeft === 0) return;
-
         const timer = setInterval(() => {
             setTimeLeft(prevTime => (prevTime > 0 ? prevTime - 1 : 0));
         }, 1000);
-
         return () => clearInterval(timer);
     }, [isRunning, timeLeft]);
 
@@ -80,15 +78,9 @@ const TimerApp: React.FC = () => {
         )
         );
     };
-
+    
     return (
-        <ImageBackground
-        source={require('../../../-hatch/assets/images/task-app-bg.png')}
-        style={styles.background}
-        resizeMode="cover"> 
-            <View style={styles.container}>
-            
-
+        <View style={styles.container}>
             <Text style={styles.header}>What are we doing today?</Text>
             <Button title="Set a Timer" onPress={() => setModalVisible(true)} />
             
@@ -113,7 +105,6 @@ const TimerApp: React.FC = () => {
                     </View>
                 </View>
             </Modal>
-
             {/* add task  */}
             <Modal
                 visible={addTaskModalVisible}
@@ -134,11 +125,10 @@ const TimerApp: React.FC = () => {
                     </View>
                 </View>
             </Modal>
-
             <Grid>
                 <Col>
                     <TouchableOpacity onPress={startTimer} disabled={isRunning || timeLeft <= 0}>
-                        <Image source={require('../../assets/images/start_timer_button.png')} resizeMode="contain" style={styles.icon} />
+                        <Image source={require('../../assets/images/char_matcha.png')} resizeMode="contain" style={styles.icon} />
                     </TouchableOpacity>
                 </Col>
                 <Col>
@@ -148,20 +138,16 @@ const TimerApp: React.FC = () => {
                 </Col>
                 <Col>
                     <TouchableOpacity onPress={stopTimer} disabled={!isRunning}>
-                        <Image source={require('../../assets/images/stop_timer_button.png')} resizeMode="contain" style={styles.icon} />
+                        <Image source={require('../../assets/images/char_matcha.png')} resizeMode="contain" style={styles.icon} />
                     </TouchableOpacity>
                 </Col>
             </Grid>
-
             <View style={styles.buttonContainer}>
                 <Button title="Reset" onPress={resetTimer} />
             </View>
-
             <TouchableOpacity style={styles.addTaskButton}onPress={() => setAddTaskModalVisible(true)}>
-                    <Text>Add Task</Text>
                     <Image source={require('../../assets/images/char_matcha.png')} resizeMode="contain" style={styles.icon} />
             </TouchableOpacity>
-
             <View style={styles.taskContainer}>
                 <FlatList
                     data={list}
@@ -177,82 +163,96 @@ const TimerApp: React.FC = () => {
                     )}
                 />
             </View>
-            </View> 
-            </ImageBackground>
+        </View>
     );
 };
-
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
     },
     header: {
-      fontSize: 24,
-      marginBottom: 20,
-    },
-    modalContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalContent: {
-      backgroundColor: 'white',
-      padding: 20,
-      borderRadius: 10,
-      alignItems: 'center',
-      width: 300,
-    },
-    modalText: {
-      fontSize: 18,
-      marginBottom: 10,
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 20,
     },
     input: {
-      height: 40,
-      borderColor: 'gray',
-      borderWidth: 1,
-      marginBottom: 10,
-      paddingHorizontal: 10,
-      width: '100%',
-    },
-    centered: {
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    grid: {
-      width: '100%',
-      marginTop: 20,
-    },
-    icon: {
-      width: 100,
-      height: 100,
-    },
-    darkPinkText: {
-      color: '#FF1493', // Dark pink color
-      textAlign: 'center',
-      marginTop: 5,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        padding: 10,
+        width: 200,
+        marginBottom: 10,
+        textAlign: 'center',
     },
     timerContainer: {
-      justifyContent: 'center',
-      alignItems: 'center',
+        marginVertical: 20,
+        padding: 20,
+        borderWidth: 2,
+        borderRadius: 50,
+        borderColor: '#f39c12',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 100,
+        height: 100,
     },
     timerText: {
-      fontSize: 48,
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     buttonContainer: {
-      marginTop: 20,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '80%',
+        marginTop: 10,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        alignItems: 'center',
+        width: 300,
+    },
+    modalText: {
+        fontSize: 18,
+        marginBottom: 10,
+    },
+    icon:{
+        height: 100,
+        width: 100,
     },
     taskItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginVertical: -5,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: -5,
     },
     taskText: {
-      fontSize: 16,
-      marginLeft: 10,
+        fontSize: 16,
+        marginLeft: 10,
     },
-  });
-
+    formContainer: {
+        marginTop: 20,
+        width: '100%',
+    },
+    taskContainer: {
+        marginTop: 10,
+        width: '100%',
+    },
+    addTaskButton: {
+        position: 'absolute',  
+        right: 20,  
+        bottom: 20,  
+        padding: 10,  
+        zIndex: 100,
+    },
+    
+});
 export default TimerApp;

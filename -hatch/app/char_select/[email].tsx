@@ -1,28 +1,51 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState } from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import axios from "axios";
+
+const API_URL = "http://192.X.X.X:5000"; // change this to the ip address of the exp url for ios simulator to work (e.g., "http://192.168.X.X:5000")
 
 export default function CharSelect() {
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [charName, setCharName] = useState('');
   const router = useRouter();
+  const { email } = useLocalSearchParams(); // Get email from URL params
 
   const handleCharSelect = (char: string) => {
     setSelectedChar(char);
     setModalVisible(true);
   };
 
-  const handleNameSubmit = () => {
-    console.log('Character:', selectedChar);
-    console.log('Name:', charName);
-    setModalVisible(false);
-    router.push('/homepage'); 
+  const handleNameSubmit = async () => {
+    if (!selectedChar || !charName) {
+      Alert.alert("Error", "Please select a pet and give it a name!");
+      return;
+    }
+
+    try {
+      console.log("Sending pet data to:", `${API_URL}/updatePet`);
+      const response = await axios.post(`${API_URL}/updatePet`, {
+        email, // Email from route params
+        petType: selectedChar,
+        petName: charName
+      });
+
+      if (response.status === 200) {
+        console.log("Pet selection saved successfully:", response.data);
+        router.push("/homepage");
+      } else {
+        Alert.alert("Error", "Failed to save pet information.");
+      }
+    } catch (error) {
+      console.error("Error saving pet:", error);
+      Alert.alert("Error", error.response?.data?.error || "Server error");
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>select your pet !</Text>
+      <Text style={styles.title}>Please select your pet!</Text>
       <View style={styles.charContainer}>
         <TouchableOpacity onPress={() => handleCharSelect('Matcha')}>
           <Image source={require('../../assets/images/char_matcha.png')} style={styles.charImage} />
@@ -39,22 +62,22 @@ export default function CharSelect() {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>choose a name for your friend</Text>
+            <Text style={styles.modalText}>Give your pet a name!</Text>
             <TextInput
               style={styles.input}
-              placeholder="name ~"
+              placeholder="Enter name"
               value={charName}
               onChangeText={setCharName}
             />
             <TouchableOpacity style={styles.submitButton} onPress={handleNameSubmit}>
-              <Text style={styles.submitButtonText}> ࣪ ˖ ⊹ submit ⊹ ࣪ ˖</Text>
+              <Text style={styles.submitButtonText}>Submit</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

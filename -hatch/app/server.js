@@ -1,6 +1,6 @@
-const { ObjectId } = require('mongodb');
+/*const { ObjectId } = require('mongodb');
 const connectToDatabase = require('./dbConnection');
-const UserModel = require('./models/userModel');  // Make sure this is the correct import
+const UserModel = require('./models/userModel');  // Make sure this is the correct import*/
 
 /**
  * 
@@ -9,7 +9,7 @@ const UserModel = require('./models/userModel');  // Make sure this is the corre
  * @param {*} petName 
  * @returns 
  */
-async function registerUser(newUser, petType, petName) {
+/*async function registerUser(newUser, petType, petName) {
   let client;
   try {
     client = await connectToDatabase();
@@ -246,6 +246,7 @@ async function main() {
 
 
 main().catch(console.error);
+*/
 
 
 /**
@@ -260,3 +261,140 @@ main().catch(console.error);
  * 
  * 
  */
+
+require("dotenv").config(); // environment variables
+const express = require("express");
+const cors = require('cors');
+const connectToDatabase = require("./dbConnection");
+const UserModel = require("./models/userModel");
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(express.json()); // parse JSON requests
+app.use(cors()); // allow cross-origin requests
+
+// API endpoints
+
+/* register new user */
+app.post("/register", async (req, res) => {
+  const { name, email, password, petType, petName } = req.body;
+  console.log("Received request:", req.body); // debug
+
+  if (!name || !email || !password) {
+    console.log("Missing fields!"); // debug
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  let client;
+  try {
+    client = await connectToDatabase();
+    const userModel = new UserModel(client);
+
+    // check if user already exists
+    const existingUser = await userModel.findUserByEmail(email);
+    if (existingUser) {
+      console.log("User already exists!"); // debug
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    // create user (pet info optional at registration)
+    const newUser = {
+      name,
+      email,
+      password, 
+      pet: petType && petName ? { type: petType, name: petName } : null, // pet info will be provided after user registration, so its optional during registration
+    };
+
+    const resultUser = await userModel.createUser(newUser);
+
+    console.log("User created:", resultUser.insertedId); // debug
+    res.status(201).json({ 
+      message: "User registered successfully!", 
+      userId: resultUser.insertedId 
+    });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ error: "Error registering user" });
+  } finally {
+    if (client) await client.close();
+  }
+});
+
+app.post("/updatePet", async (req, res) => {
+  const { email, petType, petName } = req.body;
+  
+  if (!email || !petType || !petName) {
+    return res.status(400).json({ error: "Email, pet type, and pet name are required" });
+  }
+
+  let client;
+  try {
+    client = await connectToDatabase();
+    const userModel = new UserModel(client);
+
+    // find user by email
+    const existingUser = await userModel.findUserByEmail(email);
+    if (!existingUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // update user with pet info (used after registration)
+    const result = await userModel.updateUserPet(email, petType, petName);
+
+    res.status(200).json({ message: "Pet added successfully!" });
+  } catch (error) {
+    console.error("Error updating pet:", error);
+    res.status(500).json({ error: "Server error" });
+  } finally {
+    if (client) await client.close();
+  }
+});
+
+/** login */
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required" });
+  }
+
+  let client;
+  try {
+    client = await connectToDatabase();
+    const userModel = new UserModel(client);
+
+    const user = await userModel.findUserByEmail(email);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const isValidPassword = await userModel.validatePassword(password, user.password);
+    if (!isValidPassword) return res.status(401).json({ error: "Invalid password" });
+
+    res.status(200).json({ message: "Login successful", user });
+  } catch (error) {
+    res.status(500).json({ error: "Error logging in" });
+  } finally {
+    if (client) await client.close();
+  }
+});
+
+app.get("/users", async (req, res) => {
+  let client;
+  try {
+    client = await connectToDatabase();
+    const userModel = new UserModel(client);
+
+    // fetch all users from the database
+    const users = await userModel.getAllUsers();
+    res.status(200).json(users); // users returned in json format
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Error fetching users" });
+  } finally {
+    if (client) await client.close();
+  }
+});
+
+// start backend server at port 
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

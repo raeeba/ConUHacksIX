@@ -1,5 +1,5 @@
 # ConUHacksIX
-(***This project was initially created as part of the ConUHacksIX hackathon.***)
+(***This project was initially created at the ConUHacksIX hackathon.***)
 
 ## My Tutor Totoro
 

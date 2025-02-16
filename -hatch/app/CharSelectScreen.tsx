@@ -3,8 +3,6 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Aler
 import { useRouter, useLocalSearchParams } from "expo-router";
 import axios from "axios";
 
-const API_URL = "http://192.X.X.X:5000"; // change this to the ip address of the exp url for ios simulator to work (e.g., "http://192.168.X.X:5000")
-
 export default function CharSelect() {
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -48,10 +46,10 @@ export default function CharSelect() {
       <Text style={styles.title}>Please select your pet!</Text>
       <View style={styles.charContainer}>
         <TouchableOpacity onPress={() => handleCharSelect('Matcha')}>
-          <Image source={require('../../assets/images/char_matcha.png')} style={styles.charImage} />
+          <Image source={require('../assets/images/char_matcha.png')} style={styles.charImage} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => handleCharSelect('Sakura')}>
-          <Image source={require('../../assets/images/char_sakura.png')} style={styles.charImage} />
+          <Image source={require('../assets/images/char_sakura.png')} style={styles.charImage} />
         </TouchableOpacity>
       </View>
       <Modal

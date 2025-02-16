@@ -1,20 +1,21 @@
 import { useState } from "react";
-import { View, Text, TextInput, Button, Alert, StyleSheet, Image, ImageBackground, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, Button, Alert, StyleSheet, Image, ImageBackground, TouchableOpacity, ActivityIndicator } from "react-native";
 import axios from "axios";
 import { useRouter } from "expo-router";
-
-const API_URL = "http://192.X.X.X:5000"; // change this to the ip address of the exp url for ios simulator to work (e.g., "http://192.168.X.X:5000")
+import { FIREBASE_DB, FIREBASE_AUTH } from "@/FirebaseConfig";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, addDoc } from "firebase/firestore";
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading ] = useState(false);
+  const auth = FIREBASE_AUTH;
   const router = useRouter(); 
 
-  const handleRedirectToRegistration = () => {
-    router.push('/RegisterScreen'); 
-  };
-
-  const handleLogin = async () => {
+  //debugging
+  // mongo db
+  /*const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Email and password are required");
       return;
@@ -41,17 +42,51 @@ const LoginScreen = () => {
         Alert.alert("Login Failed", "Network error or server is down");
       }
     }
-  };
+  };*/
+
+  const signIn = async () =>{
+    setLoading(true);
+    try {
+      const response = await signInWithEmailAndPassword(auth, email, password);
+      console.log(response);
+      router.push("/(tabs)/homepage");
+    } catch (error : any){
+      console.log(error);
+      alert('Invalid email or password');
+      // alert('login failed: ' + error.message); // debugging
+    } finally {
+      setLoading(false);
+    }
+  }
   
+  // debugging 
+  /*const signUp = async () => {
+    setLoading(true);
+    try {
+      const response = await createUserWithEmailAndPassword(auth, email, password);
+      console.log(response);
+    } catch (error : any){
+      console.log(error);
+      alert('Registration Failed');
+      //alert('registration failed: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  }*/
   
 
+  // NOTE: Don't put comments {/* */} in the return() function!
+  // Doing so might give you the following error: "Text strings must be rendered in <Text> component."
   return (
+    <ImageBackground source={require('../assets/images/login-background.png')}  style={styles.background}
+  resizeMode="cover">
     <View style={styles.container}>
-      {/*<ImageBackground source={require('.../../assets/images/green_login-bg.png')}>*/}
-      <Image source={require('../assets/images/logo.png')} style={styles.logo}/> {/** logo */}
+      
+      <Image source={require('../assets/images/logo.png')} style={styles.logo}/> 
       <TextInput 
         style={styles.input} 
-        placeholder="Enter email " 
+        placeholder="enter your email address" 
+        placeholderTextColor={styles.input.color} 
         value={email} 
         onChangeText={setEmail} 
         keyboardType="email-address"
@@ -59,30 +94,46 @@ const LoginScreen = () => {
       />
       <TextInput 
         style={styles.input} 
-        placeholder="Enter password" 
+        placeholder="enter your password" 
+        placeholderTextColor={styles.input.color} 
         value={password} 
         onChangeText={setPassword} 
-        secureTextEntry 
+        secureTextEntry={true}
       />
-      <TouchableOpacity style={styles.startButton} onPress={handleLogin}>
+
+      { loading ? <ActivityIndicator size="large" color="#000ff"/>
+      : <>
+      <TouchableOpacity style={styles.startButton} onPress={signIn}>
               <Image source={require('../assets/images/start_button.png')} style={styles.buttonImage}/>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.startButton} onPress={handleRedirectToRegistration}>
-              <Image source={require('../assets/images/char_sakura.png')} style={styles.buttonImage}/>
+      <TouchableOpacity style={styles.startButton} onPress={() => {
+        router.push('/RegisterScreen');
+      }}>
+              <Image source={require('../assets/images/register_button.png')} style={styles.buttonImage}/>
       </TouchableOpacity>
-      {/*<Button title="Register" color="#BEDABE" onPress={handleRedirectToRegistration}></Button>*/}
-      {/*</ImageBackground>*/}
-    </View>
+      
+      </>}
+
+      </View>
+      </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  /*container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#e0f7e9", 
+    backgroundColor: "#e0f7e0", 
+  },*/
+  background: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  container: {
+    padding: 20,
   },
   logo: {
     width: 320,
@@ -92,7 +143,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 40,
     borderBottomWidth: 2,  
-    borderColor: '#4CAF50',
+    borderColor: '#bb6f7c',
     borderWidth: 1,
     borderRadius: 25,
     marginBottom: 10,
@@ -100,7 +151,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingLeft: 10,              
     fontSize: 16,                 
-    color: '#333',                
+    color: '#bb6f7c',               
     marginVertical: 10,
     backgroundColor: '#BEDABE'
   },
@@ -108,7 +159,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonImage: {
-    width: 160, 
+    width: 175, 
     height: 75, 
   },
 });

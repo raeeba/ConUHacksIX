@@ -96,7 +96,7 @@ const TimerApp: React.FC = () => {
                         <TextInput
                             style={styles.input}
                             keyboardType="numeric"
-                            placeholder="Enter time in seconds"
+                            placeholder="Enter time in minutes"
                             value={inputTime}
                             onChangeText={setInputTime}
                         />
@@ -128,7 +128,7 @@ const TimerApp: React.FC = () => {
             <Grid>
                 <Col>
                     <TouchableOpacity onPress={startTimer} disabled={isRunning || timeLeft <= 0}>
-                        <Image source={require('../../assets/images/char_matcha.png')} resizeMode="contain" style={styles.icon} />
+                        <Image source={require('../../assets/images/start-button-timer.png')} resizeMode="contain" style={styles.icon} />
                     </TouchableOpacity>
                 </Col>
                 <Col>
@@ -138,7 +138,7 @@ const TimerApp: React.FC = () => {
                 </Col>
                 <Col>
                     <TouchableOpacity onPress={stopTimer} disabled={!isRunning}>
-                        <Image source={require('../../assets/images/char_matcha.png')} resizeMode="contain" style={styles.icon} />
+                        <Image source={require('../../assets/images/stop-button.png')} resizeMode="contain" style={styles.icon} />
                     </TouchableOpacity>
                 </Col>
             </Grid>

@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import axios from "axios";
+import { useRouter, useNavigation } from "expo-router";
 
-export default function CharSelect() {
+export default function CharSelectScreen() {
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [charName, setCharName] = useState('');
   const router = useRouter();
-  const { email } = useLocalSearchParams(); // Get email from URL params
 
-  const handleCharSelect = (char: string) => {
+
+  /*const handleCharSelect = (char: string) => {
     setSelectedChar(char);
     setModalVisible(true);
   };
@@ -39,18 +38,21 @@ export default function CharSelect() {
       console.error("Error saving pet:", error);
       Alert.alert("Error", error.response?.data?.error || "Server error");
     }
-  };
+  };*/
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Please select your pet!</Text>
+      <Text style={styles.title}>Select your pet!</Text>
       <View style={styles.charContainer}>
-        <TouchableOpacity onPress={() => handleCharSelect('Matcha')}>
+
+        <TouchableOpacity style={styles.charImage}>
           <Image source={require('../assets/images/char_matcha.png')} style={styles.charImage} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleCharSelect('Sakura')}>
+
+        <TouchableOpacity>
           <Image source={require('../assets/images/char_sakura.png')} style={styles.charImage} />
         </TouchableOpacity>
+
       </View>
       <Modal
         animationType="slide"
@@ -67,7 +69,7 @@ export default function CharSelect() {
               value={charName}
               onChangeText={setCharName}
             />
-            <TouchableOpacity style={styles.submitButton} onPress={handleNameSubmit}>
+            <TouchableOpacity style={styles.submitButton}>
               <Text style={styles.submitButtonText}>Submit</Text>
             </TouchableOpacity>
           </View>

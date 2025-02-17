@@ -1,116 +1,98 @@
 import { useState } from "react"; 
 import { View, TextInput, Button, Alert, StyleSheet, TouchableOpacity, Image, ImageBackground, ActivityIndicator} from "react-native";
-// import axios from "axios";
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
+import UserModel from '../models/userModel';
 
 // Firebase Setup
 import { FIREBASE_DB, FIREBASE_AUTH } from "@/FirebaseConfig";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { collection, addDoc } from "firebase/firestore";
 
+let petType = 0;
+let petName = "";
+
 const RegisterScreen = () => {
   const router = useRouter(); // To navigate to character selection screen
+  // User information
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Pet information set by user
+  //const [petType, setPetType] = useState(0);
+  //const [petName, setPetName] = useState("");
+
+  // Create user model 
+  const [user] = useState(new UserModel());
+
   const [loading, setLoading] = useState(false);
-  const auth = FIREBASE_AUTH; // db authentication
+  const navigation = useNavigation();
 
-/*const handleRegister = async () => {
-  if (!name || !email || !password) {
-    Alert.alert("Error", "All fields are required");
-    return;
-  }
+  const [userData, setUserData] = useState([]);
 
-  try {
-    console.log("Sending request to:", `${API_URL}/register`);
-    const response = await axios.post(`${API_URL}/register`, { name, email, password });
-
-    if (response.status === 201) {
-      Alert.alert("Success", "User registered successfully!");
-      router.replace(`/char_select/${encodeURIComponent(email)}`);
-    } else {
-      Alert.alert("Error", "Unexpected response from server.");
-    }
-  } catch (error) {
-    console.error("Registration error:", error);
-    Alert.alert("Error", error.response?.data?.error || "Server error");
-  }
-};*/
-
-  const addUser = async () => {
-    // debugging
-    console.log("addUser function triggered!");
-    console.log(FIREBASE_DB); // ensure firestore instance initialization
-    console.log(FIREBASE_DB)
-    try {
-      const docRef = await addDoc(collection(FIREBASE_DB, "users"), {
-        name: name,
-        email: email,
-        password: password
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (error) {
-      console.error("Error adding document: ", error);
-    }
-  };
-
-  const signUp = async () => {
-    setLoading(true);
-    try {
-      const response = await createUserWithEmailAndPassword(auth, email, password); // Add to Firebase Authentication
-      addUser(); // Add to Firestore DB
-      console.log(response);
-    } catch (error : any){
-      console.log(error);
-      alert('Registration Failed');
-      //alert('registration failed: ' + error.message); // debugging
-    } finally {
-      setLoading(false);
-    }
-  }
-
-
-  // NOTE: Don't put comments {/* */} in the return() function!
-  // Doing so might give you the following error: "Text strings must be rendered in <Text> component."
+  //* NOTE: Don't put comments {/* */} in the return() function!
+  //* Doing so might give you the following error: "Text strings must be rendered in <Text> component."
   return (
-    <ImageBackground source={require('../assets/images/login-background.png')}  style={styles.background}
+    <ImageBackground source={require('../assets/images/login-bg-30.png')}  style={styles.background}
       resizeMode="cover">
-    <View style={styles.container}>
-    <Image source={require('../assets/images/logo.png')} style={styles.logo}/> 
-    <TextInput 
-      style={styles.input} 
-      placeholder="enter your name" 
-      placeholderTextColor={styles.input.color}
-      value={name} 
-      onChangeText={setName}
-    />
-    <TextInput 
-      style={styles.input} 
-      placeholder=" enter your email address" 
-      placeholderTextColor={styles.input.color}
-      value={email} 
-      onChangeText={setEmail} 
-      keyboardType="email-address"
-    />
-    <TextInput 
-      style={styles.input} 
-      placeholder="enter your password" 
-      placeholderTextColor={styles.input.color}
-      value={password} 
-      onChangeText={setPassword}
-      secureTextEntry
-    />
-    <TouchableOpacity style={styles.startButton} onPress={() => {
-          signUp();
-          router.push("/CharSelectScreen");
-        }
-      }>
-        <Image source={require('../assets/images/register_button.png')} style={styles.buttonImage}/>
-    </TouchableOpacity>
+      <View style={styles.container}>
+        <Image source={require('../assets/images/logo.png')} style={styles.logo}/> 
+          <TextInput 
+            style={styles.input} 
+            placeholder="what's your name?" 
+            placeholderTextColor={styles.input.color}
+            value={name} 
+            onChangeText={setName}
+          />
+          <TextInput 
+            style={styles.input} 
+            placeholder="what's your email address?" 
+            placeholderTextColor={styles.input.color}
+            value={email} 
+            onChangeText={setEmail} 
+            keyboardType="email-address"
+          />
+          <TextInput 
+            style={styles.input} 
+            placeholder="what's your password?" 
+            placeholderTextColor={styles.input.color}
+            value={password} 
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
-    <Button title="Back" color="#BEDABE" onPress={() => router.back()}></Button>
-    </View>
+          <TouchableOpacity style={styles.button} onPress={async () => {
+                try{
+                  await user.registerUser(name, email, password);
+                  const userPetType = await user.getUserDataByField(email, "pet");
+
+                  console.log("User pet type:", userPetType);  
+
+                  if (userPetType !== null && userPetType !== undefined){
+
+                    if (userPetType === 0){
+                      router.push("/CharSelectScreen");
+                    } else {
+                      console.log("Error fetching pet type.")
+                      alert("Error fetching pet type."+ userPetType);
+                    }
+                  } else {
+                    console.log("Error fetching pet type in registration undefined. petType: "+ petType);
+                    alert("Error fetching pet type in registration undefined. petType: "+ petType);
+                  }
+                } catch (error){
+                  console.error("Error occurred during registration.")
+                }
+              }
+            }>
+              <Image source={require('../assets/images/register_button.png')} style={styles.buttonImage}/>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={() => router.back()}>
+            <Image source={require('../assets/images/back-button.png')} style={styles.buttonImage}/>
+          </TouchableOpacity>
+
+        </View>
     </ImageBackground>
   );
 };
@@ -151,7 +133,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     backgroundColor: '#BEDABE'
   },
-  startButton: {
+  button: {
     alignItems: "center",
   },
   buttonImage: {

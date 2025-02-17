@@ -2,6 +2,9 @@ import { useState } from "react";
 import { View, Text, TextInput, Button, Alert, StyleSheet, Image, ImageBackground, TouchableOpacity, ActivityIndicator } from "react-native";
 import axios from "axios";
 import { useRouter } from "expo-router";
+import UserModel from '../models/userModel';
+
+
 import { FIREBASE_DB, FIREBASE_AUTH } from "@/FirebaseConfig";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { collection, addDoc } from "firebase/firestore";
@@ -11,7 +14,9 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading ] = useState(false);
   const auth = FIREBASE_AUTH;
+  const db = FIREBASE_DB;
   const router = useRouter(); 
+  const [user] = useState(new UserModel());
 
   //debugging
   // mongo db
@@ -44,7 +49,7 @@ const LoginScreen = () => {
     }
   };*/
 
-  const signIn = async () =>{
+  /*const signIn = async () =>{
     setLoading(true);
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
@@ -57,7 +62,7 @@ const LoginScreen = () => {
     } finally {
       setLoading(false);
     }
-  }
+  }*/
   
   // debugging 
   /*const signUp = async () => {
@@ -75,10 +80,10 @@ const LoginScreen = () => {
   }*/
   
 
-  // NOTE: Don't put comments {/* */} in the return() function!
-  // Doing so might give you the following error: "Text strings must be rendered in <Text> component."
+  //* NOTE: Don't put comments {/* */} in the return() function!
+  //* Doing so might give you the following error: "Text strings must be rendered in <Text> component."
   return (
-    <ImageBackground source={require('../assets/images/login-background.png')}  style={styles.background}
+    <ImageBackground source={require('../assets/images/login-bg-30.png')}  style={styles.background}
   resizeMode="cover">
     <View style={styles.container}>
       
@@ -103,11 +108,44 @@ const LoginScreen = () => {
 
       { loading ? <ActivityIndicator size="large" color="#000ff"/>
       : <>
-      <TouchableOpacity style={styles.startButton} onPress={signIn}>
+      <TouchableOpacity style={styles.button} onPress={async ()=> {
+        try{
+          await user.loginUser(email, password);
+          const userPetType = await user.getUserDataByField(email, "pet");
+
+          console.log("User pet type in login:", userPetType);
+          /*if (userPetType === 0){
+            router.push("/CharSelectScreen");
+          } else if (userPetType === 1 || userPetType == 2){
+            router.push("/(tabs)/homepage");
+          } else {
+            console.log("Error fetching pet type in login." + email + " " + password + " " + userPetType)
+            alert("Error fetching pet type.");
+          }
+        } catch (error){
+          console.error("Error occurred during registration.")
+        }*/
+
+          if (userPetType !== null && userPetType !== undefined){
+
+            if (userPetType === 0){
+              router.push("/CharSelectScreen");
+            } else {
+              console.log("Error fetching pet type.")
+              alert("Error fetching pet type."+ userPetType);
+            }
+          } else {
+            console.log("Error fetching pet type in registration undefined. petType: "+ petType);
+            alert("Error fetching pet type in registration undefined. petType: "+ petType);
+          }
+        } catch (error){
+          console.error("Error occurred during registration.")
+        }
+      }}>
               <Image source={require('../assets/images/start_button.png')} style={styles.buttonImage}/>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.startButton} onPress={() => {
+      <TouchableOpacity style={styles.button} onPress={() => {
         router.push('/RegisterScreen');
       }}>
               <Image source={require('../assets/images/register_button.png')} style={styles.buttonImage}/>
@@ -153,9 +191,9 @@ const styles = StyleSheet.create({
     fontSize: 16,                 
     color: '#bb6f7c',               
     marginVertical: 10,
-    backgroundColor: '#BEDABE'
+    backgroundColor: '#BEDABE',
   },
-  startButton: {
+  button: {
     alignItems: "center",
   },
   buttonImage: {

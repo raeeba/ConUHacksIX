@@ -114,18 +114,6 @@ const LoginScreen = () => {
           const userPetType = await user.getUserDataByField(email, "pet");
 
           console.log("User pet type in login:", userPetType);
-          /*if (userPetType === 0){
-            router.push("/CharSelectScreen");
-          } else if (userPetType === 1 || userPetType == 2){
-            router.push("/(tabs)/homepage");
-          } else {
-            console.log("Error fetching pet type in login." + email + " " + password + " " + userPetType)
-            alert("Error fetching pet type.");
-          }
-        } catch (error){
-          console.error("Error occurred during registration.")
-        }*/
-
           if (userPetType !== null && userPetType !== undefined){
 
             if (userPetType === 0){
@@ -135,8 +123,8 @@ const LoginScreen = () => {
               alert("Error fetching pet type."+ userPetType);
             }
           } else {
-            console.log("Error fetching pet type in registration undefined. petType: "+ petType);
-            alert("Error fetching pet type in registration undefined. petType: "+ petType);
+            console.log("Error fetching pet type in registration undefined. petType: ");
+            alert("Error fetching pet type in registration undefined. petType: ");
           }
         } catch (error){
           console.error("Error occurred during registration.")

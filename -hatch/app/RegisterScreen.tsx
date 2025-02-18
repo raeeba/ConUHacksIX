@@ -1,15 +1,7 @@
 import { useState } from "react"; 
 import { View, TextInput, Button, Alert, StyleSheet, TouchableOpacity, Image, ImageBackground, ActivityIndicator} from "react-native";
-import { useNavigation, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import UserModel from '../models/userModel';
-
-// Firebase Setup
-import { FIREBASE_DB, FIREBASE_AUTH } from "@/FirebaseConfig";
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { collection, addDoc } from "firebase/firestore";
-
-let petType = 0;
-let petName = "";
 
 const RegisterScreen = () => {
   const router = useRouter(); // To navigate to character selection screen
@@ -18,15 +10,10 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Pet information set by user
-  //const [petType, setPetType] = useState(0);
-  //const [petName, setPetName] = useState("");
-
   // Create user model 
   const [user] = useState(new UserModel());
 
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation();
 
   const [userData, setUserData] = useState([]);
 
@@ -64,24 +51,27 @@ const RegisterScreen = () => {
           <TouchableOpacity style={styles.button} onPress={async () => {
                 try{
                   await user.registerUser(name, email, password);
-                  const userPetType = await user.getUserDataByField(email, "pet");
+                  const userPetType = await user.getPetType(email);
 
                   console.log("User pet type:", userPetType);  
 
                   if (userPetType !== null && userPetType !== undefined){
 
                     if (userPetType === 0){
-                      router.push("/CharSelectScreen");
+                      router.push({
+                        pathname: "/CharSelectScreen",
+                        params: {email: email},
+                      });
                     } else {
                       console.log("Error fetching pet type.")
                       alert("Error fetching pet type."+ userPetType);
                     }
                   } else {
-                    console.log("Error fetching pet type in registration undefined. petType: "+ petType);
-                    alert("Error fetching pet type in registration undefined. petType: "+ petType);
+                    console.log("Error fetching pet type in registration undefined. petType: "+ userPetType);
+                    alert("Error fetching pet type in registration undefined. petType: "+ userPetType);
                   }
                 } catch (error){
-                  console.error("Error occurred during registration.")
+                  console.log("Error occurred during registration.")
                 }
               }
             }>

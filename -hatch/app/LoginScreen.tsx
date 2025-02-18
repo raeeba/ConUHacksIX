@@ -111,13 +111,16 @@ const LoginScreen = () => {
       <TouchableOpacity style={styles.button} onPress={async ()=> {
         try{
           await user.loginUser(email, password);
-          const userPetType = await user.getUserDataByField(email, "pet");
+          const userPetType = await user.getPetType(email);
 
           console.log("User pet type in login:", userPetType);
           if (userPetType !== null && userPetType !== undefined){
 
             if (userPetType === 0){
-              router.push("/CharSelectScreen");
+              router.push({
+                pathname: "/CharSelectScreen",
+                params: {email: email},
+              });
             } else {
               console.log("Error fetching pet type.")
               alert("Error fetching pet type."+ userPetType);
@@ -127,7 +130,7 @@ const LoginScreen = () => {
             alert("Error fetching pet type in registration undefined. petType: ");
           }
         } catch (error){
-          console.error("Error occurred during registration.")
+          console.log("Error occurred during registration.")
         }
       }}>
               <Image source={require('../assets/images/start_button.png')} style={styles.buttonImage}/>

@@ -71,12 +71,16 @@ class UserModel{
       }
 
       /**
-       * Get the user's data in a specified field.
+       * Get the type of the user's pet.
+       * 
        * @param userEmail User's email
        * @param fieldName Name of the field whose data is being fetched.
-       * @returns 
+       * @returns The type of the user's pet. The possible types of pets are:
+       *          0: No pet has been selected.
+       *          1: Matcha pet. 
+       *          2: Sakura pet.
        */
-      async getUserDataByField(userEmail: string, fieldName: string){
+      async getPetType(userEmail: string){
         const userDocRef = doc(FIREBASE_DB, "users", userEmail);
        
         try {
@@ -85,7 +89,6 @@ class UserModel{
         if (userDocSnap.exists()){
           const userData = userDocSnap.data();
           console.log("Fetched user data:", userData);
-
 
           if (userData.pet && typeof userData.pet === "object") {
                 const petType = userData.pet.petType;

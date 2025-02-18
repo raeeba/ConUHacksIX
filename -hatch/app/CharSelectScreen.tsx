@@ -1,55 +1,37 @@
 import React, { useState } from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from "react-native";
-import { useRouter, useNavigation } from "expo-router";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Modal, TextInput, Alert, ImageBackground } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import UserModel from '../models/userModel';
 
-export default function CharSelectScreen() {
-  const [selectedChar, setSelectedChar] = useState<string | null>(null);
+const CharSelectScreen = () =>{
+  // Character name form
   const [modalVisible, setModalVisible] = useState(false);
+  
+  const [selectedPetType, setSelectedPetType] = useState(0);
   const [charName, setCharName] = useState('');
+  const [user] = useState(new UserModel());
+
   const router = useRouter();
+  const { email } = useLocalSearchParams(); // Get the user's email from the Registration Screen
 
-
-  /*const handleCharSelect = (char: string) => {
-    setSelectedChar(char);
+  const selectPet = (petType: number) => {
+    setSelectedPetType(petType);
+    console.log("Selected pet type is: " + petType);
     setModalVisible(true);
-  };
-
-  const handleNameSubmit = async () => {
-    if (!selectedChar || !charName) {
-      Alert.alert("Error", "Please select a pet and give it a name!");
-      return;
-    }
-
-    try {
-      console.log("Sending pet data to:", `${API_URL}/updatePet`);
-      const response = await axios.post(`${API_URL}/updatePet`, {
-        email, // Email from route params
-        petType: selectedChar,
-        petName: charName
-      });
-
-      if (response.status === 200) {
-        console.log("Pet selection saved successfully:", response.data);
-        router.push("/homepage");
-      } else {
-        Alert.alert("Error", "Failed to save pet information.");
-      }
-    } catch (error) {
-      console.error("Error saving pet:", error);
-      Alert.alert("Error", error.response?.data?.error || "Server error");
-    }
-  };*/
+  }
 
   return (
+    <ImageBackground source={require('../assets/images/login-bg-30.png')}  style={styles.background}
+          resizeMode="cover"> 
     <View style={styles.container}>
-      <Text style={styles.title}>Select your pet!</Text>
+      <Text style={styles.title}>choose your pet!</Text>
       <View style={styles.charContainer}>
 
-        <TouchableOpacity style={styles.charImage}>
+        <TouchableOpacity style={styles.charImage} onPress={() => selectPet(1)}>
           <Image source={require('../assets/images/char_matcha.png')} style={styles.charImage} />
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity style={styles.charImage} onPress={() => selectPet(2)}>
           <Image source={require('../assets/images/char_sakura.png')} style={styles.charImage} />
         </TouchableOpacity>
 
@@ -69,22 +51,25 @@ export default function CharSelectScreen() {
               value={charName}
               onChangeText={setCharName}
             />
-            <TouchableOpacity style={styles.submitButton}>
+            <TouchableOpacity style={styles.submitButton} onPress={()=>setModalVisible(false)}>
               <Text style={styles.submitButtonText}>Submit</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
     </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    justifyContent: "center", 
+    alignItems: "center",
+    flex: 1
+  },
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e0f7e9', 
+    padding: 20
   },
   title: {
     fontSize: 30,
@@ -142,3 +127,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
+
+export default CharSelectScreen;

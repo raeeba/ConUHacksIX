@@ -119,15 +119,17 @@ const LoginScreen = () => {
             if (userPetType === 0){
               router.push({
                 pathname: "/CharSelectScreen",
-                params: {email: email},
+                params: {userEmail: email},
               });
-            } else {
-              console.log("Error fetching pet type.")
-              alert("Error fetching pet type."+ userPetType);
+            } else if (userPetType === 1 || userPetType === 2){
+              router.push({
+                pathname: "/(tabs)/homepage",
+                params: {userEmail: email},
+              });
             }
           } else {
-            console.log("Error fetching pet type in registration undefined. petType: ");
-            alert("Error fetching pet type in registration undefined. petType: ");
+            console.log("Error fetching pet type in Login undefined. petType: ", userPetType);
+            alert("Error fetching pet type in registration undefined. petType: " + userPetType);
           }
         } catch (error){
           console.log("Error occurred during registration.")

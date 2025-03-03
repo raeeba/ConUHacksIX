@@ -2,6 +2,7 @@ import { Text, View, StyleSheet, TouchableOpacity, Alert, Button, FlatList, Imag
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import UserModel  from '../../models/userModel';
 
 // HomePage
 const HomePage = () =>{
@@ -39,9 +40,7 @@ const HomePage = () =>{
         alignItems: "center",
       }}
     >
-     
-  
-      {/* Wrap multiple <Text> elements inside a View or Fragment */}
+    
       <View style={{ alignItems: "center", marginTop: 20 }}>
         {username ? (
           <>
@@ -53,17 +52,15 @@ const HomePage = () =>{
         )}
       </View>
   
-      {/* Chatbot Navigation Button */}
        <TouchableOpacity onPress={() =>  router.push("/ChatScreen")}>
           <Image source={require('../../assets/images/char_sakura.png')} style={styles.charImage} />
       </TouchableOpacity>
 
-      {/* Logout Button */}
        <Button
         title="Logout"
         onPress={async () => {
-          await AsyncStorage.removeItem("username"); // Clear stored user name
-          await AsyncStorage.removeItem("user"); // Also clear stored user data
+          await AsyncStorage.removeItem("username"); 
+          await AsyncStorage.removeItem("user");
           Alert.alert("Logged out");
         }}
       />

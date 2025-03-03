@@ -4,34 +4,44 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import UserModel from '../models/userModel';
 
 const CharSelectScreen = () =>{
-  // Character name form
+  // Pet name form
+  //? IDEA: We could add more fields to the form (i.e., gender, favourite foods, etc.)
   const [modalVisible, setModalVisible] = useState(false);
   
   const [selectedPetType, setSelectedPetType] = useState(0);
-  const [charName, setCharName] = useState('');
+  const [petName, setPetName] = useState('');
   const [user] = useState(new UserModel());
 
   const router = useRouter();
-  const { email } = useLocalSearchParams(); // Get the user's email from the Registration Screen
+  const { userEmail } = useLocalSearchParams(); // Get the user's email from the Login Screen.
+  const email = Array.isArray(userEmail) ? userEmail[0] : userEmail;
 
-  const selectPet = (petType: number) => {
+  const setPetType = (petType: number) => {
+    console.log("Get pet type is: " + petType);
+    setSelectedPetType(petType);
+    setModalVisible(true);
+  }
+
+  /*const selectPet = (petType: number) => {
     setSelectedPetType(petType);
     console.log("Selected pet type is: " + petType);
     setModalVisible(true);
-  }
+  }*/
 
   return (
     <ImageBackground source={require('../assets/images/login-bg-30.png')}  style={styles.background}
           resizeMode="cover"> 
     <View style={styles.container}>
-      <Text style={styles.title}>choose your pet!</Text>
+      <Text style={styles.title}>choose your pet! </Text>
+      <Text> "{userEmail}"</Text>
+      <Text> "{selectedPetType}"</Text>
       <View style={styles.charContainer}>
 
-        <TouchableOpacity style={styles.charImage} onPress={() => selectPet(1)}>
+        <TouchableOpacity style={styles.charImage} onPress={() => setPetType(1)}>
           <Image source={require('../assets/images/char_matcha.png')} style={styles.charImage} />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.charImage} onPress={() => selectPet(2)}>
+        <TouchableOpacity style={styles.charImage} onPress={() => setPetType(2)}>
           <Image source={require('../assets/images/char_sakura.png')} style={styles.charImage} />
         </TouchableOpacity>
 
@@ -44,14 +54,14 @@ const CharSelectScreen = () =>{
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Give your pet a name!</Text>
+            <Text style={styles.modalText}>give your pet a name!</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter name"
-              value={charName}
-              onChangeText={setCharName}
+              value={petName}
+              onChangeText={setPetName}
             />
-            <TouchableOpacity style={styles.submitButton} onPress={()=>setModalVisible(false)}>
+            <TouchableOpacity style={styles.submitButton} onPress={()=>user.choosePet(email, selectedPetType, petName)}>
               <Text style={styles.submitButtonText}>Submit</Text>
             </TouchableOpacity>
           </View>

@@ -60,7 +60,7 @@ const RegisterScreen = () => {
                     if (userPetType === 0){
                       router.push({
                         pathname: "/CharSelectScreen",
-                        params: {email: email},
+                        params: {userEmail: email},
                       });
                     } else {
                       console.log("Error fetching pet type.")
